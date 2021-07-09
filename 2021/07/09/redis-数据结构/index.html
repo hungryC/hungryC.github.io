@@ -20,30 +20,45 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="大佬说的对">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Dream For Money">
-<meta property="og:url" content="http://example.com/index.html">
+  <meta name="description" content="Redis 底层数据结构一共有 6 种，分别是简单动态字符串、双向链表、压缩列表、哈希表、跳表和整数数组。它们和数据类型的对应关系如下图所示：  可以看到，String 类型的底层实现只有一种数据结构，也就是简单动态字符串。而 List、Hash、Set 和 Sorted Set 这四种数据类型，都有两种底层实现结构。通常情况下，我们会把这四种类型称为集合类型，它们的特点是一个键对应了一个集合的数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis 数据结构">
+<meta property="og:url" content="http://example.com/2021/07/09/redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/index.html">
 <meta property="og:site_name" content="Dream For Money">
-<meta property="og:description" content="大佬说的对">
+<meta property="og:description" content="Redis 底层数据结构一共有 6 种，分别是简单动态字符串、双向链表、压缩列表、哈希表、跳表和整数数组。它们和数据类型的对应关系如下图所示：  可以看到，String 类型的底层实现只有一种数据结构，也就是简单动态字符串。而 List、Hash、Set 和 Sorted Set 这四种数据类型，都有两种底层实现结构。通常情况下，我们会把这四种类型称为集合类型，它们的特点是一个键对应了一个集合的数">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/03/24/4qTBbCEXNjpxVdf.png">
+<meta property="og:image" content="https://i.loli.net/2021/03/24/nQjFLM6lPrmCIYy.png">
+<meta property="og:image" content="https://i.loli.net/2021/03/25/1yLwtpmW9QTRdsn.png">
+<meta property="og:image" content="https://i.loli.net/2021/03/25/XMmq7WNn34ebYf6.png">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/c8/0e/c8d3f1951874da0d916ed51ccdce9e0e.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/a9/4e/a9a6bc78ea3bb652ef1404020dd2934e.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/3c/f2/3cb007yy63c820d6dd2e4999608683f2.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/65/6d/65f41469866cb94963b4c9afbf2b016d.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/4a/87/4a8296e841f18ed4f3a554703ebd5887.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/2a/74/2a2a650086acf9700c0603a4be8ceb74.jpg">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/0d/ba/0d64c9765ab72a50abef16a0275bc0ba.jpg">
+<meta property="article:published_time" content="2021-07-09T07:22:08.000Z">
+<meta property="article:modified_time" content="2021-07-09T07:24:16.205Z">
 <meta property="article:author" content="Momo Jiji">
+<meta property="article:tag" content="redis">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/03/24/4qTBbCEXNjpxVdf.png">
 
-<link rel="canonical" href="http://example.com/">
+<link rel="canonical" href="http://example.com/2021/07/09/redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome : true,
-    isPost : false,
+    isHome : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>Dream For Money</title>
+  <title>redis 数据结构 | Dream For Money</title>
   
 
 
@@ -141,9 +156,10 @@
         <div class="content-wrap">
           
 
-          <div class="content index posts-expand">
+          <div class="content post posts-expand">
             
-      
+
+    
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
@@ -159,10 +175,9 @@
       <meta itemprop="name" content="Dream For Money">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/07/09/redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">redis 数据结构</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          redis 数据结构
+        </h1>
 
         <div class="post-meta">
             <span class="post-meta-item">
@@ -195,7 +210,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>Redis 底层数据结构一共有 6 种，分别是简单动态字符串、双向链表、压缩列表、哈希表、跳表和整数数组。它们和数据类型的对应关系如下图所示：</p>
+        <p>Redis 底层数据结构一共有 6 种，分别是简单动态字符串、双向链表、压缩列表、哈希表、跳表和整数数组。它们和数据类型的对应关系如下图所示：</p>
 <p><img src="https://i.loli.net/2021/03/24/4qTBbCEXNjpxVdf.png" alt="图片.png"></p>
 <p>可以看到，String 类型的底层实现只有一种数据结构，也就是简单动态字符串。而 List、Hash、Set 和 Sorted Set 这四种数据类型，都有两种底层实现结构。通常情况下，我们会把这四种类型称为集合类型，它们的特点是一个键对应了一个集合的数据。</p>
 <h4 id="键和值用什么结构组织？"><a href="#键和值用什么结构组织？" class="headerlink" title="键和值用什么结构组织？"></a>键和值用什么结构组织？</h4><p>为了实现从键到值的快速访问，Redis 使用了一个哈希表来保存所有键值对。一个哈希表，其实就是一个数组，数组的每个元素称为一个哈希桶。所以，我们常说，一个哈希表是由多个哈希桶组成的，每个哈希桶中保存了键值对数据。看到这里，你可能会问了：“如果值是集合类型的话，作为数组元素的哈希桶怎么来保存呢？”其实，哈希桶中的元素保存的并不是值本身，而是指向具体值的指针。这也就是说，不管值是 String，还是集合类型，哈希桶中的元素都是指向它们的指针。在下图中，可以看到，哈希桶中的 entry 元素中保存了<em>key和</em>value指针，分别指向了实际的键和值，这样一来，即使值是一个集合，也可以通过*value指针被查找到</p>
@@ -301,91 +316,33 @@
 
 <p>此时，我们就完成了一个自定义的 NewTypeObject 数据类型，可以实现基本的命令操作了。当然，如果你还希望新的数据类型能被持久化保存，我们还需要在 Redis 的 RDB 和 AOF 模块中增加对新数据类型进行持久化保存的代码。</p>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/redis/" rel="tag"># redis</a>
+          </div>
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/06/30/hello-world/">
+        
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Momo Jiji">
-      <meta itemprop="description" content="大佬说的对">
-    </span>
 
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Dream For Money">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/06/30/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-06-30 21:47:15" itemprop="dateCreated datePublished" datetime="2021-06-30T21:47:15+08:00">2021-06-30</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/06/30/hello-world/" rel="prev" title="Hello World">
+      <i class="fa fa-chevron-left"></i> Hello World
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
-  
-
-
   
 
 
@@ -438,6 +395,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%94%AE%E5%92%8C%E5%80%BC%E7%94%A8%E4%BB%80%E4%B9%88%E7%BB%93%E6%9E%84%E7%BB%84%E7%BB%87%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">键和值用什么结构组织？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E8%A1%A8%E7%9A%84%E5%86%B2%E7%AA%81%E9%97%AE%E9%A2%98"><span class="nav-number">2.</span> <span class="nav-text">哈希表的冲突问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B8%90%E8%BF%9B%E5%BC%8Fhash"><span class="nav-number">3.</span> <span class="nav-text">渐进式hash</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="nav-number">4.</span> <span class="nav-text">底层数据结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Redis-%E6%89%A9%E5%B1%95%E7%B1%BB%E5%9E%8B"><span class="nav-number">5.</span> <span class="nav-text">Redis 扩展类型</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Bitmap"><span class="nav-number">5.1.</span> <span class="nav-text">Bitmap</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#HyperLogLog"><span class="nav-number">5.2.</span> <span class="nav-text">HyperLogLog</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9D%A2%E5%90%91-LBS-%E5%BA%94%E7%94%A8%E7%9A%84-GEO-%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">5.3.</span> <span class="nav-text">面向 LBS 应用的 GEO 数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#GeoHash-%E7%9A%84%E7%BC%96%E7%A0%81%E6%96%B9%E6%B3%95"><span class="nav-number">5.3.1.</span> <span class="nav-text">GeoHash 的编码方法</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E6%93%8D%E4%BD%9C-GEO-%E7%B1%BB%E5%9E%8B%EF%BC%9F"><span class="nav-number">5.3.2.</span> <span class="nav-text">如何操作 GEO 类型？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">6.</span> <span class="nav-text">自定义数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89%E6%96%B0%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">6.1.</span> <span class="nav-text">定义新数据类型</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
